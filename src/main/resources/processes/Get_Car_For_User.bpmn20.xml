@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+             typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.flowable.org/processdef">
+    <process id="getCar" name="Get Car For User" isExecutable="true">
+
+        <startEvent id="startEvent" flowable:formFieldValidation="true"/>
+        <sequenceFlow id="sid-B09192F3-F223-4F99-B2A2-74E973DB83D3" sourceRef="startEvent" targetRef="getCarForUser"/>
+
+        <userTask id="getCarForUser" name="Get car" flowable:formFieldValidation="true" flowable:assignee="${assignee}"/>
+        <sequenceFlow id="sid-888D4500-8060-43BE-A552-80455716DBA7" sourceRef="getCarForUser" targetRef="decision"/>
+
+        <exclusiveGateway id="decision"/>
+        <sequenceFlow id="sid-DB97D027-F832-42DF-A3DF-3774F40F8DD3" name="car exists" sourceRef="decision" targetRef="carReturn">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[
+                    ${carExists == true}
+                ]]>
+            </conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="sid-A74C4B50-D454-4003-A873-2503224AEF50" name="car doesn't exist" sourceRef="decision" targetRef="carNonExistent">
+            <conditionExpression xsi:type="tFormalExpression">
+                <![CDATA[
+                    ${carExists == false}
+                ]]>
+            </conditionExpression>
+        </sequenceFlow>
+
+        <serviceTask id="carReturn" name="return the car" flowable:class="org.test.flowable.delegate.GetCar" />
+        <sequenceFlow id="sid-0339E3DE-501F-42CE-89EE-62E49594176B" sourceRef="carReturn" targetRef="approveEnd" />
+
+        <serviceTask id="carNonExistent" name="car doesn't exist message" flowable:class="org.test.flowable.delegate.CarNotExistingMessage" />
+        <sequenceFlow id="sid-B61DC08B-BC0B-4444-A580-99CFE35DC22B" sourceRef="carNonExistent" targetRef="rejectEnd" />
+
+        <endEvent id="approveEnd" />
+
+        <endEvent id="rejectEnd" />
+    </process>
+</definitions>
